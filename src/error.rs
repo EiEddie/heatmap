@@ -4,7 +4,7 @@ use thiserror::Error;
 pub enum Error {
 	/// 给定的日期不合法
 	#[error("Given date is wrong")]
-	DateError,
+	WrongDate,
 
 	#[error(transparent)]
 	DataBaseError(#[from] ::rusqlite::Error),
