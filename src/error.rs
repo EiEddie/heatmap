@@ -8,6 +8,9 @@ pub enum Error {
 
 	#[error(transparent)]
 	DataBaseError(#[from] ::rusqlite::Error),
+
+	#[error(transparent)]
+	ParseIntError(#[from] ::std::num::ParseIntError),
 }
 
 pub type Result<T> = ::std::result::Result<T, Error>;
