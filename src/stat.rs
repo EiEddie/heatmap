@@ -1,5 +1,6 @@
-use chrono::{Datelike, NaiveDate};
 use std::collections::BTreeMap;
+
+use chrono::{Datelike, NaiveDate};
 
 /// 每一天的数据
 #[derive(Debug)]
@@ -11,9 +12,7 @@ struct DaysData {
 
 impl DaysData {
 	fn new() -> Self {
-		return Self {
-			data: BTreeMap::new(),
-		};
+		return Self { data: BTreeMap::new(), };
 	}
 
 	/// 添加一条记录, 并返回给定日期的统计总次数
@@ -41,9 +40,7 @@ pub struct YearData {
 
 impl YearData {
 	pub fn new() -> Self {
-		return Self {
-			data: BTreeMap::new(),
-		};
+		return Self { data: BTreeMap::new(), };
 	}
 
 	/// 添加一条记录, 并返回给定日期的统计总次数
