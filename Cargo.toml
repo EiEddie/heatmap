@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.31"
 rusqlite = { version = "0.30.0", features = ["bundled"] }
+thiserror = "1.0.50"
