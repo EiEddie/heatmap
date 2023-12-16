@@ -2,9 +2,6 @@ use std::collections::BTreeMap;
 
 use chrono::{Datelike, NaiveDate};
 
-use crate::error::Result;
-use crate::import;
-
 /// 每一天的数据
 #[derive(Debug)]
 struct DaysData {
@@ -53,14 +50,5 @@ impl YearData {
 	pub fn add(&mut self, date: NaiveDate) -> u32 {
 		let days_data = self.data.entry(date.year()).or_insert(DaysData::new());
 		return days_data.add(date);
-	}
-
-	/// 从别处导入数据创建
-	pub fn from(other: impl import::Import) -> Result<Self> {
-		let mut me = Self::new();
-		for date in other.all_datas()? {
-			me.add(date);
-		}
-		return Ok(me);
 	}
 }
