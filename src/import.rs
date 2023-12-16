@@ -2,14 +2,18 @@ use chrono::NaiveDate;
 use rusqlite as rsql;
 
 use crate::error::{Error, Result};
-use crate::stat::YearData;
+
+pub trait Import {
+	/// 获取所有数据
+	fn all_datas(self) -> Result<Vec<NaiveDate>>;
+}
 
 pub struct Database {
 	conn: rsql::Connection,
 }
 
 impl Database {
-	pub fn new(dbpath: &String) -> Result<Self> {
+	pub fn new(dbpath: &str) -> Result<Self> {
 		return Ok(Self { conn: rsql::Connection::open(dbpath)?, });
 	}
 
@@ -26,10 +30,12 @@ impl Database {
 
 		return Ok(all_year);
 	}
+}
 
-	/// 将数据库中的所有记录导入 [`YearData`] 内
-	pub fn data_into(&self, dest: &mut YearData) -> Result<()> {
-		// todo!()
+impl Import for Database {
+	fn all_datas(self) -> Result<Vec<NaiveDate>> {
+		let mut all_datas: Vec<NaiveDate> = Vec::new();
+
 		for year in self.get_all_year()? {
 			for i in self.conn
 			             .prepare(format!("SELECT month, day FROM '{}'", year).as_str())?
@@ -39,12 +45,13 @@ impl Database {
 			{
 				let i = i?;
 				if let Some(date) = NaiveDate::from_ymd_opt(year, i.0, i.1) {
-					dest.add(date);
+					all_datas.push(date);
 				} else {
 					return Err(Error::WrongDate);
 				}
 			}
 		}
-		return Ok(());
+
+		return Ok(all_datas);
 	}
 }
