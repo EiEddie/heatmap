@@ -11,6 +11,9 @@ pub enum Error {
 
 	#[error(transparent)]
 	ParseIntError(#[from] ::std::num::ParseIntError),
+
+	#[error(transparent)]
+	FmtError(#[from] ::std::fmt::Error),
 }
 
 pub type Result<T> = ::std::result::Result<T, Error>;
