@@ -6,6 +6,10 @@ pub enum Error {
 	#[error("Given date is wrong")]
 	WrongDate,
 
+	/// 查找的数据不存在
+	#[error("Have no data about input")]
+	NoData,
+
 	#[error(transparent)]
 	DataBaseError(#[from] ::rusqlite::Error),
 
@@ -14,6 +18,9 @@ pub enum Error {
 
 	#[error(transparent)]
 	FmtError(#[from] ::std::fmt::Error),
+
+	#[error(transparent)]
+	IoError(#[from] ::std::io::Error),
 }
 
 pub type Result<T> = ::std::result::Result<T, Error>;
