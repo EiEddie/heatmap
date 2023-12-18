@@ -17,8 +17,8 @@ fn levels(cnt: u32) -> String {
 		u32::MAX => " ".to_string(),
 		0 => ".".dark_grey().to_string(),
 		1 => "+".green().to_string(),
-		2 => "@".yellow().to_string(),
-		3 => "%".red().to_string(),
+		2 => "%".yellow().to_string(),
+		3 => "@".red().to_string(),
 		4..=u32::MAX => "#".on_magenta().to_string(),
 	};
 }
