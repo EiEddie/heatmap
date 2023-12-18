@@ -128,4 +128,17 @@ impl YearData {
 		self.show_to_io(year, &mut stdout)?;
 		return Ok(());
 	}
+
+	/// 打印全部数据到标准输出
+	pub fn show_all(&self) -> Result<()> {
+		for (year, _) in &self.data {
+			print!(
+			       "{} |   {}\n",
+			       format!(" {}", levels(u32::MAX)).repeat((7) as usize),
+			       year
+			);
+			self.show(*year)?;
+		}
+		return Ok(());
+	}
 }
