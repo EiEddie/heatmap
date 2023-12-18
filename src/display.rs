@@ -10,8 +10,11 @@ use crate::stat::{DaysData, YearData};
 /// 用字符及其颜色反映给定值的程度
 ///
 /// 必须保证宽度相等
+///
+/// 若传入 `u32::MAX`, 给出一个空白, 这样可以保证所有显示的宽度都相等
 fn levels(cnt: u32) -> String {
 	return match cnt {
+		u32::MAX => " ".to_string(),
 		0 => ".".dark_grey().to_string(),
 		1 => "+".green().to_string(),
 		2 => "@".yellow().to_string(),
@@ -23,6 +26,7 @@ fn levels(cnt: u32) -> String {
 impl Display for DaysData {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		// 每一个月第一天在这一年的序数
+		// 从 0 计数
 		let ord_mon: Vec<_> =
 			(1 as u32..=12).map(|m| NaiveDate::from_ymd_opt(self.year, m, 1).unwrap().ordinal0())
 			               .collect();
@@ -53,21 +57,25 @@ impl Display for DaysData {
 			for weekday in 0..7 {
 				// 这一天在一年中的序号
 				// 若这一年不是从周一开始, 前面不存在的日子用负数表示
-				// 负数被溢出到最大值附近
-				let day = (week * 7 + weekday - fst_weekday as i32) as u32;
+				let day = week * 7 + weekday - fst_weekday as i32;
 
 				// 这一天是否是下一个月的第一天
-				let is_next_mon = ord_mon_val != None && ord_mon_val.unwrap().1.clone() == day;
+				let is_next_mon =
+					ord_mon_val != None && ord_mon_val.unwrap().1.clone() as i32 == day;
 				is_next_mon_w = is_next_mon_w || is_next_mon;
 
-				// 储存的数据已显示完毕
+				// 若日序号 == 十二月第一天的序号 + 十二月的天数
+				// 即这一年已结束
 				// 退出
-				// TODO: 一年结束后再退出
-				if data_val == None {
-					write!(f, "{} |\n", "  ".repeat((7 - weekday) as usize))?;
+				if day == (ord_mon[12 - 1] + 31) as i32 {
+					write!(
+					       f,
+					       "*{}|\n",
+					       format!(" {}", levels(u32::MAX)).repeat((7 - weekday) as usize)
+					)?;
 					break 'week;
 				}
-				let d_val = data_val.unwrap();
+				let d_val = data_val.unwrap_or((&u32::MAX, &0));
 
 				// 已经到了下一个月
 				// 做个标记
@@ -81,11 +89,11 @@ impl Display for DaysData {
 
 				// 这一天有数据
 				// 打印出来
-				if d_val.0.clone() == day {
+				if d_val.0.clone() as i32 == day {
 					write!(f, "{}", levels(*d_val.1))?;
 					data_val = data_iter.next();
-				} else if day > 366 {
-					write!(f, " ")?;
+				} else if day < 0 {
+					write!(f, "{}", levels(u32::MAX))?;
 				} else {
 					write!(f, "{}", levels(0))?;
 				}
