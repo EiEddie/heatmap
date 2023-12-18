@@ -1,8 +1,24 @@
-use std::fmt::Display;
+use std::fmt::{self, Display};
+use std::io;
 
 use chrono::{Datelike, NaiveDate};
+use crossterm::style::Stylize;
 
-use crate::stat::DaysData;
+use crate::error::{Error, Result};
+use crate::stat::{DaysData, YearData};
+
+/// 用字符及其颜色反映给定值的程度
+///
+/// 必须保证宽度相等
+fn levels(cnt: u32) -> String {
+	return match cnt {
+		0 => ".".dark_grey().to_string(),
+		1 => "+".green().to_string(),
+		2 => "@".yellow().to_string(),
+		3 => "%".red().to_string(),
+		4..=u32::MAX => "#".on_magenta().to_string(),
+	};
+}
 
 impl Display for DaysData {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -46,6 +62,7 @@ impl Display for DaysData {
 
 				// 储存的数据已显示完毕
 				// 退出
+				// TODO: 一年结束后再退出
 				if data_val == None {
 					write!(f, "{} |\n", "  ".repeat((7 - weekday) as usize))?;
 					break 'week;
@@ -65,14 +82,14 @@ impl Display for DaysData {
 				// 这一天有数据
 				// 打印出来
 				if d_val.0.clone() == day {
-					// TODO: 打印热力图而非数字
-					write!(f, "{}", d_val.1)?;
+					write!(f, "{}", levels(*d_val.1))?;
 					data_val = data_iter.next();
-				} else {
+				} else if day > 366 {
 					write!(f, " ")?;
+				} else {
+					write!(f, "{}", levels(0))?;
 				}
 			}
-			// TODO: 彩色输出
 			// 打印月份
 			if is_next_mon_w {
 				write!(f, " | {:<2}\n", mon)?;
@@ -80,7 +97,27 @@ impl Display for DaysData {
 				write!(f, " |\n")?;
 			}
 		}
+		return Ok(());
+	}
+}
 
+impl YearData {
+	/// 打印到实现了 [`fmt::Write`] 特征的对象
+	pub fn show_to_fmt(&self, year: i32, out: &mut impl fmt::Write) -> Result<()> {
+		write!(out, "{}", self.data.get(&year).ok_or(Error::NoData)?)?;
+		return Ok(());
+	}
+
+	/// 打印到实现了 [`io::Write`] 特征的对象
+	pub fn show_to_io(&self, year: i32, out: &mut impl io::Write) -> Result<()> {
+		write!(out, "{}", self.data.get(&year).ok_or(Error::NoData)?)?;
+		return Ok(());
+	}
+
+	/// 打印到标准输出
+	pub fn show(&self, year: i32) -> Result<()> {
+		let mut stdout = io::stdout();
+		self.show_to_io(year, &mut stdout)?;
 		return Ok(());
 	}
 }

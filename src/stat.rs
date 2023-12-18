@@ -1,9 +1,6 @@
 use std::collections::BTreeMap;
-use std::io;
 
 use chrono::{Datelike, NaiveDate};
-
-use crate::error::{Error, Result};
 
 /// 每一天的数据
 #[derive(Debug)]
@@ -39,7 +36,7 @@ impl DaysData {
 /// 将每天的数据按年存放
 #[derive(Debug)]
 pub struct YearData {
-	data: BTreeMap<i32, DaysData>,
+	pub(crate) data: BTreeMap<i32, DaysData>,
 }
 
 impl YearData {
@@ -55,16 +52,5 @@ impl YearData {
 		let year = date.year();
 		let days_data = self.data.entry(year).or_insert(DaysData::new(year));
 		return days_data.add(date);
-	}
-
-	pub fn show_to(&self, year: i32, out: &mut impl io::Write) -> Result<()> {
-		write!(out, "{}", self.data.get(&year).ok_or(Error::NoData)?)?;
-		return Ok(());
-	}
-
-	pub fn show(&self, year: i32) -> Result<()> {
-		let mut stdout = io::stdout();
-		self.show_to(year, &mut stdout)?;
-		return Ok(());
 	}
 }
