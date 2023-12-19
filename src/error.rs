@@ -5,6 +5,10 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
+	/// 没有数据源
+	#[error("Have no source of data")]
+	NoSourceOfData,
+
 	/// 给定的日期不合法
 	#[error("Given date is wrong")]
 	WrongDate,
