@@ -143,8 +143,6 @@ impl fmt::Display for DaysData {
 
 impl YearData {
 	/// 打印一个日期范围的数据到实现了 [`fmt::Write`] 特征的对象
-	// TODO: 打印指定的区间
-	#[allow(dead_code)]
 	fn fmt_range(&self, out: &mut impl fmt::Write, from: NaiveDate, to: NaiveDate) -> Result<()> {
 		if from > to {
 			return Err(Error::WrongDate);
