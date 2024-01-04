@@ -187,6 +187,12 @@ impl YearData {
 
 	/// 打印一年的数据到实现了 [`fmt::Write`] 特征的对象
 	fn fmt_year(&self, out: &mut impl fmt::Write, year: i32) -> Result<()> {
+		write!(
+		       out,
+		       "{} |   {}\n",
+		       format!(" {}", levels(u32::MAX)).repeat(7),
+		       year
+		)?;
 		write!(out, "{}", self.data.get(&year).ok_or(Error::NoData)?)?;
 		return Ok(());
 	}
