@@ -27,7 +27,7 @@ impl DaysData {
 	/// 打印从 `from` 到 `to` 的全部统计数据到实现了 [`fmt::Write`] 的对象
 	///
 	/// `from` `to` 分别表示一年内某两天的序号, 从 0 开始
-	fn show_range_year_to_fmt(&self, from: u32, to: u32, f: &mut impl fmt::Write) -> Result<()> {
+	fn fmt_range_year(&self, from: u32, to: u32, f: &mut impl fmt::Write) -> Result<()> {
 		// `from` 应小于 `to`
 		if to < from {
 			return Err(Error::WrongDate);
@@ -43,6 +43,10 @@ impl DaysData {
 		                      })
 		                      .collect();
 
+		// 给定的序列中第一天的月份
+		// 从 0 计数
+		let from_mon = from_day.month0();
+
 		// 这一年第一天是星期几
 		// 从 0 计数
 		let fst_weekday = NaiveDate::from_yo_opt(self.year, 1).unwrap()
@@ -50,7 +54,7 @@ impl DaysData {
 		                                                      .number_from_monday()
 		                  - 1;
 
-		let mut data_iter = self.data.iter();
+		let mut data_iter = self.data.iter().filter(|i| *i.0 >= from);
 		let mut ord_mon_iter = ord_mon.iter().enumerate();
 
 		let mut data_val = data_iter.next();
@@ -88,7 +92,7 @@ impl DaysData {
 			// 做个标记
 			if is_next_mon {
 				write!(f, "*")?;
-				mon = ord_mon_val.unwrap().0 + 1;
+				mon = ord_mon_val.unwrap().0 as u32 + from_mon + 1;
 				ord_mon_val = ord_mon_iter.next();
 			} else {
 				write!(f, " ")?;
@@ -130,12 +134,11 @@ impl DaysData {
 	}
 }
 
-impl Display for DaysData {
+impl fmt::Display for DaysData {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		let end = NaiveDate::from_ymd_opt(self.year, 12, 31).unwrap()
 		                                                    .ordinal0();
-		return self.show_range_year_to_fmt(0, end, f)
-		           .map_err(|_| fmt::Error);
+		return self.fmt_range_year(0, end, f).map_err(|_| fmt::Error);
 	}
 }
 
