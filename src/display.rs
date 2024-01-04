@@ -1,6 +1,6 @@
 use std::fmt;
 
-use chrono::{Datelike, NaiveDate};
+use chrono::{Datelike, Local, NaiveDate};
 use crossterm::style::Stylize;
 
 use crate::error::{Error, Result};
@@ -223,6 +223,17 @@ impl YearData {
 	pub fn print_full(&self) -> Result<()> {
 		let mut buf = String::new();
 		self.fmt_all(&mut buf)?;
+		print!("{}", buf);
+		return Ok(());
+	}
+
+	/// 打印到今天
+	pub fn print_auto(&self) -> Result<()> {
+		let mut buf = String::new();
+		let begin = *self.data.first_key_value().ok_or(Error::NoData)?.0;
+		let begin = NaiveDate::from_yo_opt(begin, 1).unwrap();
+		let today = Local::now().date_naive();
+		self.fmt_range(&mut buf, begin, today)?;
 		print!("{}", buf);
 		return Ok(());
 	}

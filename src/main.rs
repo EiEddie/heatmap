@@ -7,7 +7,7 @@ fn run() -> error::Result<()> {
 
 	let db = import::sqlite::Database::new(&data_path)?;
 
-	stat::YearData::from(db)?.print_full()?;
+	stat::YearData::from(db)?.print_auto()?;
 
 	Ok(())
 }
