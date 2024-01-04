@@ -1,5 +1,4 @@
-use std::fmt::{self, Display};
-use std::io;
+use std::fmt;
 
 use chrono::{Datelike, NaiveDate};
 use crossterm::style::Stylize;
@@ -143,35 +142,82 @@ impl fmt::Display for DaysData {
 }
 
 impl YearData {
-	/// 打印到实现了 [`fmt::Write`] 特征的对象
-	pub fn show_to_fmt(&self, year: i32, out: &mut impl fmt::Write) -> Result<()> {
-		write!(out, "{}", self.data.get(&year).ok_or(Error::NoData)?)?;
-		return Ok(());
-	}
-
-	/// 打印到实现了 [`io::Write`] 特征的对象
-	pub fn show_to_io(&self, year: i32, out: &mut impl io::Write) -> Result<()> {
-		write!(out, "{}", self.data.get(&year).ok_or(Error::NoData)?)?;
-		return Ok(());
-	}
-
-	/// 打印到标准输出
-	pub fn show(&self, year: i32) -> Result<()> {
-		let mut stdout = io::stdout();
-		self.show_to_io(year, &mut stdout)?;
-		return Ok(());
-	}
-
-	/// 打印全部数据到标准输出
-	pub fn show_all(&self) -> Result<()> {
-		for (year, _) in &self.data {
-			print!(
-			       "{} |   {}\n",
-			       format!(" {}", levels(u32::MAX)).repeat((7) as usize),
-			       year
-			);
-			self.show(*year)?;
+	/// 打印一个日期范围的数据到实现了 [`fmt::Write`] 特征的对象
+	// TODO: 打印指定的区间
+	#[allow(dead_code)]
+	fn fmt_range(&self, out: &mut impl fmt::Write, from: NaiveDate, to: NaiveDate) -> Result<()> {
+		if from > to {
+			return Err(Error::WrongDate);
 		}
+
+		for year in from.year()..=to.year() {
+			let mut range = (u32::MAX, u32::MAX);
+
+			range.0 = if year == from.year() {
+				from.ordinal0()
+			} else {
+				0
+			};
+
+			range.1 = if year == to.year() {
+				to.ordinal0()
+			} else {
+				(if NaiveDate::from_yo_opt(year, 1).unwrap().leap_year() {
+					366
+				} else {
+					365
+				}) - 1
+			};
+
+			write!(
+			       out,
+			       "{} |   {}\n",
+			       format!(" {}", levels(u32::MAX)).repeat(7),
+			       year
+			)?;
+
+			self.data
+			    .get(&year)
+			    .ok_or(Error::NoData)?
+			    .fmt_range_year(range.0, range.1, out)?;
+		}
+
+		return Ok(());
+	}
+
+	/// 打印一年的数据到实现了 [`fmt::Write`] 特征的对象
+	fn fmt_year(&self, out: &mut impl fmt::Write, year: i32) -> Result<()> {
+		write!(out, "{}", self.data.get(&year).ok_or(Error::NoData)?)?;
+		return Ok(());
+	}
+
+	/// 打印全部数据到实现了 [`fmt::Write`] 特征的对象
+	fn fmt_all(&self, out: &mut impl fmt::Write) -> Result<()> {
+		for (year, _) in &self.data {
+			write!(
+			       out,
+			       "{} |   {}\n",
+			       format!(" {}", levels(u32::MAX)).repeat(7),
+			       year
+			)?;
+			self.fmt_year(out, *year)?;
+		}
+		return Ok(());
+	}
+
+	/// 打印一年的数据
+	pub fn print_year(&self, year: i32) -> Result<()> {
+		let mut buf = String::new();
+		self.fmt_year(&mut buf, year)?;
+		print!("{}", buf);
+		return Ok(());
+	}
+
+	/// 打印全部数据
+	pub fn print_full(&self) -> Result<()> {
+		let mut buf = String::new();
+		self.fmt_all(&mut buf)?;
+		print!("{}", buf);
 		return Ok(());
 	}
 }
