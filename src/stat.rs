@@ -22,11 +22,17 @@ impl DaysData {
 
 	/// 添加一条记录, 并返回给定日期的统计总次数
 	///
-	/// 若日期存在, 则给该日期的统计 +1;
-	/// 若不存在, 创建此日期的记录且 +1.
-	fn add(&mut self, date: NaiveDate) -> u32 {
+	/// 若日期存在, 则给该日期的统计加指定的次数;
+	/// 若不存在, 创建此日期的记录且加指定的次数.
+	///
+	/// # Warning
+	///
+	/// 当 `times` 为 0 时, 记录仍然会加 1.
+	fn add(&mut self, date: NaiveDate, times: u32) -> u32 {
+		// `times` 不得为 0, 因为添加一条空记录没有意义
+		let times = if times == 0 { 1 } else { times };
 		let cnt = self.data.entry(date.ordinal0()).or_insert(0);
-		*cnt += 1;
+		*cnt += times;
 		return *cnt;
 	}
 }
@@ -46,11 +52,15 @@ impl YearData {
 
 	/// 添加一条记录, 并返回给定日期的统计总次数
 	///
-	/// 若日期存在, 则给该日期的统计 +1;
-	/// 若不存在, 创建此日期的记录且 +1.
-	pub fn add(&mut self, date: NaiveDate) -> u32 {
+	/// 若日期存在, 则给该日期的统计加指定的次数;
+	/// 若不存在, 创建此日期的记录且加指定的次数.
+	///
+	/// # Warning
+	///
+	/// 当 `times` 为 0 时, 记录仍然会加 1.
+	pub fn add(&mut self, date: NaiveDate, times: u32) -> u32 {
 		let year = date.year();
 		let days_data = self.data.entry(year).or_insert(DaysData::new(year));
-		return days_data.add(date);
+		return days_data.add(date, times);
 	}
 }

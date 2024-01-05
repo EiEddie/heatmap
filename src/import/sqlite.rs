@@ -29,8 +29,8 @@ impl Database {
 }
 
 impl Import for Database {
-	fn all_datas(self) -> Result<Vec<NaiveDate>> {
-		let mut all_datas: Vec<NaiveDate> = Vec::new();
+	fn all_datas(self) -> Result<Vec<(NaiveDate, u32)>> {
+		let mut all_datas: Vec<(NaiveDate, u32)> = Vec::new();
 
 		for year in self.get_all_year()? {
 			for i in self.conn
@@ -41,7 +41,8 @@ impl Import for Database {
 			{
 				let i = i?;
 				if let Some(date) = NaiveDate::from_ymd_opt(year, i.0, i.1) {
-					all_datas.push(date);
+					// 每个日期可能出现多次, 但是可以保证每次只记一次数
+					all_datas.push((date, 1));
 				} else {
 					return Err(Error::WrongDate);
 				}
