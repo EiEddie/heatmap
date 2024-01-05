@@ -6,5 +6,14 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.31"
 crossterm = { version = "0.27.0", default-features = false }
-rusqlite = { version = "0.30.0", features = ["bundled"] }
 thiserror = "1.0.50"
+
+# 在 非 Windows 系统下链接系统的 sqlite 库
+# 为了减小目标体积与提高编译速度
+[target.'cfg(not(windows))'.dependencies]
+rusqlite = "0.30.0"
+
+# 在 Windows 系统下启用 sqlite 的捆绑
+# 因为 Windows 下库的链接会非常繁琐复杂
+[target.'cfg(windows)'.dependencies]
+rusqlite = { version = "0.30.0", features = ["bundled"] }
