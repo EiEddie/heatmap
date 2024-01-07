@@ -209,6 +209,35 @@ impl YearData {
 		return Ok(());
 	}
 
+	/// 根据传入的日期字符串解析日期
+	///
+	/// 当 `from` 和 `to` 为 "_" 时,
+	/// 会分别被解析为 有记录的最早的一年的第一天 和 今天
+	pub fn parse_range(&self, from: &str, to: &str, fmt: &str) -> Result<(NaiveDate, NaiveDate)> {
+		let from = if from == "_" {
+			let begin = *self.data.first_key_value().ok_or(Error::NoData)?.0;
+			NaiveDate::from_yo_opt(begin, 1).unwrap()
+		} else {
+			NaiveDate::parse_from_str(from, fmt)?
+		};
+
+		let to = if to == "_" {
+			Local::now().date_naive()
+		} else {
+			NaiveDate::parse_from_str(to, fmt)?
+		};
+
+		Ok((from, to))
+	}
+
+	/// 打印一段范围的数据
+	pub fn print_range(&self, from: NaiveDate, to: NaiveDate) -> Result<()> {
+		let mut buf = String::new();
+		self.fmt_range(&mut buf, from, to)?;
+		print!("{}", buf);
+		return Ok(());
+	}
+
 	/// 打印一年的数据
 	pub fn print_year(&self, year: i32) -> Result<()> {
 		let mut buf = String::new();
