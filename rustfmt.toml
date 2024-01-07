@@ -72,4 +72,4 @@ use_field_init_shorthand = true          #false
 use_small_heuristics = "Default"
 use_try_shorthand = true                 #false
 where_single_line = false
-wrap_comments = true                     #false
+wrap_comments = false
