@@ -12,6 +12,7 @@ struct Cli {
 	///   "20220101-20231231"       : from 1 Jan, 2022 to 31 Dec, 2023
 	///   "_-20231231"              : from 1 Jan the first year which have data to 31 Dec, 2023
 	///   "20220101-_" or "20220101": from 1 Jan, 2022 to today
+	#[clap(verbatim_doc_comment)]
 	range: Option<String>,
 
 	/// Print given year
