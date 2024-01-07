@@ -6,7 +6,10 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum Error {
 	/// 没有数据源
-	#[error("Have no source of data")]
+	#[error(
+	        "Have no source of data,
+		use '-s' or set an environment variable named 'DATA_PATH'"
+	)]
 	NoSourceOfData,
 
 	/// 给定的日期不合法
