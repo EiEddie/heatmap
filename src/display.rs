@@ -124,7 +124,7 @@ impl DaysData {
 		if to_day_weekday != 6 {
 			write!(
 			       f,
-			       "{} |\n",
+			       "/{}|\n",
 			       format!(" {}", levels(u32::MAX)).repeat((6 - to_day_weekday) as usize)
 			)?;
 		}

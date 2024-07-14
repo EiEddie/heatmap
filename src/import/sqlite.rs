@@ -1,4 +1,4 @@
-use chrono::NaiveDate;
+use chrono::{Days, NaiveDate, NaiveTime};
 use rusqlite as rsql;
 
 use super::Import;
@@ -34,15 +34,31 @@ impl Import for Database {
 
 		for year in self.get_all_year()? {
 			for i in self.conn
-			             .prepare(format!("SELECT month, day FROM '{}'", year).as_str())?
+			             .prepare(format!(
+				"SELECT month, day, COALESCE(time, '07: 00') FROM '{}'",
+				year
+			).as_str())?
 			             .query_map([], |row| {
-				             Ok((row.get::<usize, u32>(0)?, row.get::<usize, u32>(1)?))
+				             Ok((row.get(0)?, row.get(1)?, row.get::<_, String>(2).unwrap()))
 			             })?
 			{
-				let i = i?;
-				if let Some(date) = NaiveDate::from_ymd_opt(year, i.0, i.1) {
+				let (month, day, time) = i?;
+				// dbg!(&time);
+				let time =
+					NaiveTime::parse_from_str(&time, "%H: %M").map_err(|_| Error::WrongDate)?;
+
+				// 是否是前一天, 若是, 此值为 1 天
+				// 早晨七点之前将判定为前一天
+				let prev_day_offset =
+					Days::new(if time < NaiveTime::from_hms_opt(7, 0, 0).unwrap() {
+						1
+					} else {
+						0
+					});
+
+				if let Some(date) = NaiveDate::from_ymd_opt(year, month, day) {
 					// 每个日期可能出现多次, 但是可以保证每次只记一次数
-					all_datas.push((date, 1));
+					all_datas.push((date - prev_day_offset, 1));
 				} else {
 					return Err(Error::WrongDate);
 				}
